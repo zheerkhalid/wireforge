@@ -1,0 +1,57 @@
+WireForge privacy statement
+===========================
+
+WireForge is a program that runs on your own PC. It has no account, no
+telemetry, no advertising and no automatic update check. Its author does not
+receive any data from it.
+
+What WireForge stores, and where
+--------------------------------
+Everything is kept in one folder on your PC, %LOCALAPPDATA%\WireForge:
+
+  settings.json    your settings
+  usage.json       how many bytes were used per day, adapter and app
+  devices.json     devices seen on your local network and the names you gave them
+  speedtest.json   the results of speed tests you ran
+
+You can open the folder from Settings and delete any of these files, or the
+whole folder, at any time. Saved Wi-Fi passwords are read from Windows when
+you open the "Saved networks" page; WireForge does not store them. They are
+written to a file only if you choose Export and tick "Include passwords".
+
+When WireForge contacts the internet
+------------------------------------
+Only when you click:
+
+  Speed test       Runs against Measurement Lab (M-Lab), an open research
+                   project. M-Lab's servers see your public IP address.
+                   M-Lab keeps the results of every test, including your IP
+                   address, the date and time and the measured speeds, and
+                   publishes them as open data, indefinitely. WireForge shows
+                   you this and asks for your agreement before the first
+                   test. No other information about you or your PC is sent.
+                   M-Lab privacy policy: https://www.measurementlab.net/privacy/
+                   M-Lab acceptable use policy: https://www.measurementlab.net/aup/
+
+  Public IP        "Show" next to "Public IP address" asks api.ipify.org,
+                   which answers with the address the request came from.
+
+  Tools            Ping, traceroute, DNS lookup, whois and port check send
+                   their probes to the host or server you enter or pick.
+                   Choosing a public DNS resolver sends your question to that
+                   company.
+
+On your local network
+---------------------
+The device scan asks each address of the network your PC is directly
+attached to who is there (ARP, ping and name queries such as mDNS, NetBIOS
+and SSDP). It only ever runs on private address ranges and never looks
+outside your local network. It runs when you click Scan, or every ten
+minutes if you turn that on.
+
+Host-name lookups for remote addresses (reverse DNS, sent to your own DNS
+server) are off unless you turn them on.
+
+Contact
+-------
+Zheer Khalid, https://zheer.dev

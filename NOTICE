@@ -1,0 +1,64 @@
+WireForge
+Copyright (c) 2026 Zheer Khalid (https://zheer.dev)
+Licensed under the MIT License (see LICENSE).
+
+Third-party material
+--------------------
+
+MAC address vendor table (IEEE MA-L / OUI public listing)
+  WireForge embeds a compact table that maps the first three bytes of a MAC
+  address to the name of the organisation the block is assigned to
+  (crates/wf-wifi/data/oui.bin: 39,948 prefixes, 19,670 names).
+  Source: IEEE Registration Authority, MA-L (OUI) public listing,
+  https://standards-oui.ieee.org/oui/oui.csv, downloaded 2026-11-16.
+  Changes: organisation addresses dropped; names tidied for display (legal-form
+  suffixes removed, all-capitals names turned into title case, long names
+  shortened); 549 rows owned by "Private" or the IEEE Registration Authority
+  itself left out. Details and how to regenerate the table are in
+  crates/wf-wifi/data/SOURCE.txt.
+  The listing is published by the IEEE as public registry information. IEEE is
+  not affiliated with WireForge and does not endorse it. Vendor names are
+  shown only to help identify devices and may be out of date or wrong for a
+  particular device.
+
+Rust crates
+  WireForge is built with open-source Rust crates, among them eframe / egui,
+  image, rfd, serde, serde_json, qrcode, raw-window-handle, tiny-skia,
+  embed-resource and the windows crate. Each is used under its own licence
+  (MIT and/or Apache-2.0 for most); see Cargo.lock for the exact versions and
+  each crate for its terms.
+
+Fonts
+  WireForge loads the Segoe UI and Segoe MDL2 Assets / Segoe Fluent Icons
+  fonts that are installed with Windows at run time. They are not distributed
+  with WireForge.
+
+Online services (used only when you start them)
+-----------------------------------------------
+
+Measurement Lab (M-Lab) NDT7 speed test
+  https://www.measurementlab.net/
+  The speed test uses M-Lab's public measurement platform through its Locate
+  API and the open ndt7 protocol, as M-Lab invites client developers to do
+  (https://www.measurementlab.net/develop/). WireForge follows M-Lab's rules
+  for clients: a test only ever starts when the user clicks, the user is
+  shown M-Lab's data policy and must agree before the first test, and no
+  more than 40 tests a day are run.
+  M-Lab publishes all test results, including the IP address the test came
+  from, as open data and keeps them indefinitely:
+  Privacy policy: https://www.measurementlab.net/privacy/
+  Acceptable use policy: https://www.measurementlab.net/aup/
+  WireForge's own privacy statement is in PRIVACY.txt.
+
+ipify public IP address API
+  https://www.ipify.org/
+  Asked once each time the user clicks "Show" next to "Public IP address".
+  The service answers with the address the request came from.
+
+Tools the user runs (ping, traceroute, DNS lookup, whois, port check,
+Wake-on-LAN) contact exactly the hosts and servers the user enters or picks:
+the system DNS server or a public resolver chosen in the list (Cloudflare
+1.1.1.1, Google 8.8.8.8, Quad9 9.9.9.9), and for whois the IANA whois server
+and the registry it refers to.
+
+WireForge is not affiliated with or endorsed by any of these services.

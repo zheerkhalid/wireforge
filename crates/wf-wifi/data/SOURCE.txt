@@ -1,0 +1,23 @@
+Vendor table: crates/wf-wifi/data/oui.bin
+
+Source:      IEEE Registration Authority, MA-L (OUI) public listing
+URL:         https://standards-oui.ieee.org/oui/oui.csv
+Downloaded:  2026-11-16 11:21 UTC (HTTP 200, 3,875,121 bytes)
+SHA-256:     b7f3fed411869c2b6768f17e58ea34401adde68c1b8482e9be221c68d36acf56 (of the downloaded CSV)
+
+Contents of the registry file: 40,500 MA-L rows.
+Kept in oui.bin: 39,948 prefixes mapped to 19,670 distinct vendor names (531,427 bytes).
+Left out: 549 rows whose owner is "Private" or "IEEE Registration Authority"
+(blocks that are sub-divided among many small vendors), and 3 duplicate
+assignments of a prefix (the last row in the file wins).
+
+Changes made to the data: organisation addresses dropped; organisation names
+tidied for display (legal-form suffixes such as "Co., Ltd.", "Inc.",
+"Corporation", "GmbH" removed, all-capitals names turned into title case,
+names cut to at most 32 bytes at a word boundary).
+
+How to regenerate: see the header of crates/wf-wifi/examples/gen_oui.rs
+(download the CSV to a folder outside the repository, then
+`cargo run -p wf-wifi --example gen_oui -- <oui.csv> crates/wf-wifi/data/oui.bin`).
+The raw CSV is not kept in the repository. The file layout is described at
+the top of crates/wf-wifi/src/oui.rs.

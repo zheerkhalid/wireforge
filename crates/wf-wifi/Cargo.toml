@@ -1,0 +1,23 @@
+[package]
+name = "wf-wifi"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+# QR code matrices for the "share this network" codes (no image support needed).
+qrcode = { version = "0.14", default-features = false }
+
+[dependencies.windows]
+version = "0.58"
+features = [
+    "Win32_Foundation",
+    "Win32_NetworkManagement_WiFi",
+    "Win32_NetworkManagement_IpHelper",
+    "Win32_NetworkManagement_Ndis",
+    "Win32_Networking_WinSock",
+]
