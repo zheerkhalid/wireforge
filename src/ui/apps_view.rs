@@ -401,6 +401,7 @@ impl App {
                         return;
                     }
                     let mut clicked: Option<String> = None;
+                    let mut fw_ask = None;
                     egui::ScrollArea::vertical()
                         .id_salt("apps-live")
                         .auto_shrink([false, false])
@@ -410,6 +411,7 @@ impl App {
                                 let tex = self.icon(&a.name, &a.path);
                                 let is_sel = self.apps.selected.as_deref() == Some(&a.name);
                                 let (cells, resp) = widgets::table_row(ui, &cols, 44.0, is_sel);
+                                let cells_name = cells.first().copied();
                                 let mut c = cells.into_iter();
                                 // App
                                 if let Some(cell) = c.next() {
@@ -474,11 +476,31 @@ impl App {
                                     number(dash.clone(), false);
                                 }
                                 number(a.connections.to_string(), false);
+                                if self.fw.is_blocked(&a.path) {
+                                    if let Some(cell) = cells_name {
+                                        ui.painter().text(
+                                            cell.right_center(),
+                                            Align2::RIGHT_CENTER,
+                                            Icon::BLOCKED.glyph(),
+                                            regular(13.0),
+                                            p.danger,
+                                        );
+                                    }
+                                }
                                 if resp.clicked() {
                                     clicked = Some(a.name.clone());
                                 }
+                                resp.context_menu(|ui| {
+                                    if let Some(ask) = self.fw_menu(ui, &a.path) {
+                                        fw_ask = Some(ask);
+                                    }
+                                });
                             }
                         });
+                    if let Some(ask) = fw_ask {
+                        let ctx = ui.ctx().clone();
+                        self.fw_handle(&ctx, ask);
+                    }
                     if let Some(name) = clicked {
                         self.apps.selected = if self.apps.selected.as_deref() == Some(&name) {
                             None
@@ -527,6 +549,23 @@ impl App {
                     }
                 });
             });
+            ui.add_space(2.0);
+            let blocked = self.fw.is_blocked(&a.path);
+            let mut ask = None;
+            ui.allocate_ui_with_layout(
+                vec2(ui.available_width(), 36.0),
+                egui::Layout::left_to_right(egui::Align::Center),
+                |ui| {
+                    ask = self.fw_button(ui, &a.path);
+                    if blocked {
+                        widgets::badge(ui, &Icon::BLOCKED.with("Blocked by WireForge"), p.danger);
+                    }
+                },
+            );
+            if let Some(ask) = ask {
+                let ctx = ui.ctx().clone();
+                self.fw_handle(&ctx, ask);
+            }
             ui.add_space(4.0);
             egui::ScrollArea::vertical()
                 .id_salt("app-details")

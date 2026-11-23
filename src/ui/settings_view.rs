@@ -387,6 +387,17 @@ impl App {
                     );
                     row(
                         ui,
+                        "New app on the internet",
+                        "Ask whether to allow or block a program the first time it connects to the internet (Firewall page).",
+                        |ui| {
+                            if widgets::toggle(ui, self.settings.fw_alerts, true).clicked() {
+                                self.settings.fw_alerts = !self.settings.fw_alerts;
+                                changed = true;
+                            }
+                        },
+                    );
+                    row(
+                        ui,
                         "Scan for devices every 10 minutes",
                         "Checks your own local network in the background while WireForge runs.",
                         |ui| {

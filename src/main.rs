@@ -18,7 +18,20 @@ const USAGE: &str = "WireForge
                speed-consent, settings, about
         (the view can also be set with the WIREFORGE_VIEW environment variable)
   WireForge.exe --selftest         run every collector once and print success or failure
-                                   with counts only (no addresses, names or passwords)";
+                                   with counts only (no addresses, names or passwords)
+
+Firewall (changes need an administrator terminal; the window asks by itself):
+  WireForge.exe --fw-list                       firewall state and the apps WireForge blocks
+  WireForge.exe --fw-block <exe> [--for 1h | --until-restart] [--inbound]
+        [--profiles all|domain,private,public]  block a program from the network
+  WireForge.exe --fw-unblock <exe>              remove WireForge's block of a program
+  WireForge.exe --fw-lockdown on [--allow <exe>]...   block all outgoing except allowed programs
+  WireForge.exe --fw-lockdown off               end lockdown, restore the previous settings
+  WireForge.exe --fw-allow <exe> | --fw-disallow <exe>   change the lockdown allow list
+  WireForge.exe --fw-undo <id>                  undo a change from the journal
+  WireForge.exe --fw-expire                     remove temporary blocks whose time is up
+  WireForge.exe --fw-remove-all                 remove every WireForge rule (end lockdown too)
+        views for --view: firewall, firewall-alert, firewall-block, firewall-lockdown";
 
 fn main() -> eframe::Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -34,6 +47,22 @@ fn main() -> eframe::Result<()> {
         wireforge::sys::attach_console();
         println!("{USAGE}");
         return Ok(());
+    }
+    if let Some(parsed) = wireforge::fw::cli::parse(&args) {
+        wireforge::sys::attach_console();
+        let code = match parsed {
+            Ok(inv) => wireforge::firewall::run_cli(inv),
+            Err(e) => {
+                if let Some(i) = args.iter().position(|a| a == "--result") {
+                    if let Some(f) = args.get(i + 1) {
+                        let _ = std::fs::write(f, &e);
+                    }
+                }
+                eprintln!("{e}\nSee WireForge.exe --help");
+                2
+            }
+        };
+        std::process::exit(code);
     }
     if has("--selftest") {
         wireforge::sys::attach_console();

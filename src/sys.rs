@@ -94,6 +94,54 @@ pub fn restart_as_admin() -> Result<(), String> {
     shell_execute("runas", &exe.to_string_lossy(), "")
 }
 
+/// Starts a program with administrator rights (UAC prompt), waits for it
+/// (at most two minutes) and returns its exit code.
+pub fn run_elevated_and_wait(exe: &str, params: &str) -> Result<u32, String> {
+    use windows::Win32::System::Threading::{GetExitCodeProcess, WaitForSingleObject};
+    use windows::Win32::UI::Shell::{
+        ShellExecuteExW, SEE_MASK_NOCLOSEPROCESS, SEE_MASK_NO_CONSOLE, SHELLEXECUTEINFOW,
+    };
+    let (verb, file, args) = (wide("runas"), wide(exe), wide(params));
+    let mut info = SHELLEXECUTEINFOW {
+        cbSize: std::mem::size_of::<SHELLEXECUTEINFOW>() as u32,
+        fMask: SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE,
+        lpVerb: PCWSTR(verb.as_ptr()),
+        lpFile: PCWSTR(file.as_ptr()),
+        lpParameters: PCWSTR(args.as_ptr()),
+        nShow: SW_HIDE.0,
+        ..Default::default()
+    };
+    // SAFETY: the strings outlive the call; the process handle is closed below.
+    unsafe {
+        if let Err(e) = ShellExecuteExW(&mut info) {
+            // ERROR_CANCELLED: the user said no at the UAC prompt.
+            return Err(if e.code().0 as u32 == 0x8007_04C7 {
+                "Administrator permission was not given, so nothing was changed.".to_string()
+            } else {
+                format!("The change could not be started: {e}")
+            });
+        }
+        if info.hProcess.is_invalid() {
+            return Err("The change could not be started.".into());
+        }
+        let waited = WaitForSingleObject(info.hProcess, 120_000);
+        let mut code = 1u32;
+        let ok = GetExitCodeProcess(info.hProcess, &mut code).is_ok();
+        let _ = CloseHandle(info.hProcess);
+        if waited.0 != 0 {
+            return Err(
+                "The change is taking unusually long; check the Firewall page again in a moment."
+                    .into(),
+            );
+        }
+        if ok {
+            Ok(code)
+        } else {
+            Err("The result of the change could not be read.".into())
+        }
+    }
+}
+
 /// Whether `url` is a plain web link this program is willing to open.
 pub fn is_web_url(url: &str) -> bool {
     let rest = url

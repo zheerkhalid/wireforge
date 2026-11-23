@@ -4,6 +4,7 @@ mod apps_view;
 mod charts;
 mod connections_view;
 mod devices_view;
+mod firewall_view;
 mod overview;
 mod saved_view;
 mod settings_view;

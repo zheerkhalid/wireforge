@@ -13,6 +13,12 @@ Everything is kept in one folder on your PC, %LOCALAPPDATA%\WireForge:
   usage.json       how many bytes were used per day, adapter and app
   devices.json     devices seen on your local network and the names you gave them
   speedtest.json   the results of speed tests you ran
+  firewall-apps.json      programs seen by new-app alerts and your answers
+  firewall-journal.jsonl  the changes WireForge made to Windows Defender
+                          Firewall (rule names and program paths), for undo
+
+Firewall rules WireForge adds live in Windows Defender Firewall itself, in
+the group "WireForge". The firewall feature sends nothing over the network.
 
 You can open the folder from Settings and delete any of these files, or the
 whole folder, at any time. Saved Wi-Fi passwords are read from Windows when

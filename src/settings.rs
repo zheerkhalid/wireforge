@@ -41,6 +41,9 @@ pub struct Settings {
     /// Tell me when a device that was never seen before joins the network.
     pub alert_new_device: bool,
     pub alert_cap: bool,
+    /// Ask about each program the first time it connects to the internet
+    /// (app firewall). Off by default.
+    pub fw_alerts: bool,
     /// Ask the Wi-Fi adapter for a fresh scan every minute while the Wi-Fi page is open.
     pub wifi_auto_scan: bool,
     /// Rescan the local network for devices every ten minutes while WireForge runs.
@@ -71,6 +74,7 @@ impl Default for Settings {
             cap_warn_pct: 80,
             alert_new_device: true,
             alert_cap: true,
+            fw_alerts: false,
             wifi_auto_scan: true,
             devices_auto_scan: false,
             speed_consent: false,

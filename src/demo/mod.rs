@@ -1,9 +1,11 @@
 //! Invented data for `--demo`: nothing here comes from this PC or its
 //! network. Screenshots are made from it.
 
+pub mod firewall;
 pub mod tools;
 pub mod wifi;
 
+pub use firewall::{firewall, lockdown_candidates};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use wf_traffic::usage::UsageDb;
 use wf_traffic::{

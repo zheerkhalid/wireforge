@@ -5,6 +5,7 @@
 //! interface. `main.rs` only parses the command line and opens the window.
 pub mod demo;
 pub mod export;
+pub mod firewall;
 pub mod fmt;
 pub mod report;
 pub mod selftest;
@@ -12,6 +13,7 @@ pub mod settings;
 pub mod sys;
 pub mod ui;
 
+pub use wf_firewall as fw;
 pub use wf_tools as tools;
 pub use wf_traffic as traffic;
 pub use wf_wifi as wifi;

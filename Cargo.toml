@@ -1,9 +1,9 @@
 [workspace]
-members = [".", "crates/wf-traffic", "crates/wf-wifi", "crates/wf-tools"]
+members = [".", "crates/wf-traffic", "crates/wf-wifi", "crates/wf-tools", "crates/wf-firewall"]
 resolver = "2"
 
 [workspace.package]
-version = "1.0.0"
+version = "1.1.0"
 edition = "2021"
 authors = ["Zheer Khalid (https://zheer.dev)"]
 homepage = "https://zheer.dev"
@@ -37,6 +37,7 @@ test = false
 wf-traffic = { path = "crates/wf-traffic" }
 wf-wifi = { path = "crates/wf-wifi" }
 wf-tools = { path = "crates/wf-tools" }
+wf-firewall = { path = "crates/wf-firewall" }
 eframe = { version = "0.31.1", default-features = false, features = ["glow", "default_fonts"] }
 image = { version = "0.25", default-features = false, features = ["png"] }
 raw-window-handle = "0.6"

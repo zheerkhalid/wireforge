@@ -452,6 +452,7 @@ impl App {
                 return;
             }
             let mut clicked: Option<String> = None;
+            let mut fw_ask = None;
             let max_h = ui.available_height() - footer;
             egui::ScrollArea::vertical()
                 .id_salt("connections")
@@ -582,8 +583,16 @@ impl App {
                         if resp.clicked() {
                             clicked = Some(key);
                         }
+                        resp.context_menu(|ui| {
+                            if let Some(ask) = self.fw_menu(ui, &c.path) {
+                                fw_ask = Some(ask);
+                            }
+                        });
                     }
                 });
+            if let Some(ask) = fw_ask {
+                self.fw_handle(&ctx, ask);
+            }
             if let Some(key) = clicked {
                 self.conns.selected = if self.conns.selected.as_deref() == Some(&key) {
                     None
@@ -599,6 +608,7 @@ impl App {
                 wf_traffic::procs::end_process_refusal(c.pid, &c.process, std::process::id());
             let mut end = false;
             let mut copy: Option<String> = None;
+            let mut fw_ask = None;
             widgets::card(ui, |ui| {
                 ui.allocate_ui_with_layout(
                     vec2(ui.available_width(), 34.0),
@@ -642,6 +652,7 @@ impl App {
                             } else if r.clicked() {
                                 end = true;
                             }
+                            fw_ask = self.fw_button(ui, &c.path);
                             if let Some(r) = c.remote {
                                 if widgets::ghost_button(ui, &Icon::COPY.with("Copy address"))
                                     .clicked()
@@ -655,6 +666,9 @@ impl App {
             });
             if let Some(text) = copy {
                 self.copy(&ctx, &text, "Address");
+            }
+            if let Some(ask) = fw_ask {
+                self.fw_handle(&ctx, ask);
             }
             if end {
                 let same = self.connections.iter().filter(|x| x.pid == c.pid).count();

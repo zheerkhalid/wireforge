@@ -7,13 +7,13 @@
 ### See everything about your network, in one place.
 
 A network and Wi-Fi monitor for Windows, written in **Rust**.
-Live traffic, per-app usage, every connection, nearby Wi-Fi and channels, saved Wi-Fi passwords, the devices on your network, a speed test and nine diagnostic tools.
+Live traffic, per-app usage, every connection, a simple app firewall, nearby Wi-Fi and channels, saved Wi-Fi passwords, the devices on your network, a speed test and nine diagnostic tools.
 
 <p>
   <img alt="Platform" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?style=for-the-badge&logo=windows11&logoColor=white" />
   <img alt="Rust" src="https://img.shields.io/badge/Rust-stable-B7410E?style=for-the-badge&logo=rust&logoColor=white" />
   <img alt="License" src="https://img.shields.io/badge/License-MIT-1E9BFF?style=for-the-badge" />
-  <img alt="EXE size" src="https://img.shields.io/badge/EXE-6.4%20MB-2F5BEA?style=for-the-badge" />
+  <img alt="EXE size" src="https://img.shields.io/badge/EXE-6.8%20MB-2F5BEA?style=for-the-badge" />
 </p>
 
 <p>
@@ -21,7 +21,7 @@ Live traffic, per-app usage, every connection, nearby Wi-Fi and channels, saved 
   <img alt="Local" src="https://img.shields.io/badge/data-stays%20on%20this%20PC-10C98F?style=flat-square" />
   <img alt="Setup and portable" src="https://img.shields.io/badge/setup%20%2B%20portable-no%20runtimes-10C98F?style=flat-square" />
   <img alt="No telemetry" src="https://img.shields.io/badge/telemetry-none-10C98F?style=flat-square" />
-  <img alt="Tests" src="https://img.shields.io/badge/tests-431%20passing-10C98F?style=flat-square" />
+  <img alt="Tests" src="https://img.shields.io/badge/tests-466%20passing-10C98F?style=flat-square" />
   <img alt="Made by Zheer Khalid" src="https://img.shields.io/badge/made%20by-Zheer%20Khalid-FF5A4E?style=flat-square" />
 </p>
 
@@ -59,6 +59,28 @@ Live traffic, per-app usage, every connection, nearby Wi-Fi and channels, saved 
 - Channel occupancy per band with a best-channel suggestion
 - Signal over time for your own network
 - Full details of the current link
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### 🛡️ App firewall
+- **Block an app from the internet in one click**: right-click it on the Apps or Connections page, or pick any `.exe`
+- Block for 1 hour, until restart or always; outgoing, and optionally incoming; on all networks or only some
+- Built on Windows Defender Firewall: blocks keep working while WireForge is closed
+- Shows the firewall state of each network profile and, read-only, every other rule that affects an app
+- Every change is journaled and can be undone; "Remove all WireForge rules" in one step
+
+</td>
+<td valign="top">
+
+### 🔔 New-app alerts and lockdown
+- Optional (off by default): the first time a program connects to the internet, WireForge asks **Allow** or **Block** and remembers the answer
+- The list of known programs can be changed at any time
+- Optional **lockdown**: block all outgoing traffic except an allow list, clearly warned, with an always-visible **End lockdown** button
+- Ending lockdown puts the previous firewall defaults back exactly
+- Administrator permission is asked only for the change itself, never for the whole app
 
 </td>
 </tr>
@@ -110,6 +132,14 @@ Live traffic, per-app usage, every connection, nearby Wi-Fi and channels, saved 
 
 <table>
 <tr>
+<td width="50%" align="center"><b>Firewall</b><br><img src="docs/screenshots/firewall.png" alt="Firewall" /></td>
+<td width="50%" align="center"><b>New app on the internet</b><br><img src="docs/screenshots/firewall-alert.png" alt="New-app alert" /></td>
+</tr>
+<tr>
+<td width="50%" align="center"><b>Block an app</b><br><img src="docs/screenshots/firewall-block.png" alt="Block dialog" /></td>
+<td width="50%" align="center"><b>Lockdown</b><br><img src="docs/screenshots/firewall-lockdown.png" alt="Lockdown dialog" /></td>
+</tr>
+<tr>
 <td width="50%" align="center"><b>Apps</b><br><img src="docs/screenshots/apps.png" alt="Apps" /></td>
 <td width="50%" align="center"><b>Connections</b><br><img src="docs/screenshots/connections.png" alt="Connections" /></td>
 </tr>
@@ -145,9 +175,9 @@ Get it from the [**latest release**](https://github.com/zheerkhalid/wireforge/re
 |---|---|
 | `WireForge-Setup.exe` | Per-user installer with shortcuts and an uninstaller |
 | `WireForge-x.y.z-portable-x64.zip` | Portable: unzip and run |
-| `WireForge.exe` | The bare 6.4 MB EXE |
+| `WireForge.exe` | The bare 6.8 MB EXE |
 
-WireForge runs without administrator rights. **Restart as administrator** unlocks per-app byte counts and details of every process.
+WireForge runs without administrator rights. **Restart as administrator** unlocks per-app byte counts and details of every process. Firewall changes ask for administrator permission one change at a time (the window itself stays a normal app).
 
 ## 🔒 Privacy
 
@@ -159,7 +189,7 @@ Everything WireForge collects stays on your PC. It makes a network request only 
 | Show public IP | ipify | A request that reveals your public IP address to that service |
 | Ping, traceroute, DNS, whois, port check | The host you name | The request itself |
 
-Saved Wi-Fi passwords are read from Windows on this PC and never leave it. WireForge never changes or deletes saved networks. See [`PRIVACY.txt`](PRIVACY.txt).
+Saved Wi-Fi passwords are read from Windows on this PC and never leave it. WireForge never changes or deletes saved networks. The firewall feature sends nothing anywhere: it reads the local connection table and writes Windows Defender Firewall rules on this PC. See [`PRIVACY.txt`](PRIVACY.txt).
 
 Use the device scan and port check only on networks and equipment that are yours or that you are allowed to test.
 
@@ -170,7 +200,17 @@ Use the device scan and port check only on networks and equipment that are yours
 - Per-app totals are slightly below adapter totals, because they count payload bytes only.
 - The tray tooltip and floating meter show live rates; the tray icon itself does not change.
 - Connections are labelled This PC, Local network or Internet; there is no country lookup.
-- No kernel driver is installed, so nothing here can block or shape traffic.
+- No kernel driver is installed. Blocking is done by Windows Defender Firewall through ordinary rules in the group **WireForge** (for example `WireForge: block example.exe (outgoing) #1a2b3c4d`), visible in `wf.msc`. Nothing shapes or throttles traffic.
+
+### 🛡️ How the firewall works (and what was tested)
+
+- **Rules are per program path.** A program that moves or updates to a new folder needs blocking again. Programs without a readable path (protected system processes) cannot be blocked from WireForge.
+- **A block wins over an allow.** That is how Windows Defender Firewall works; the Firewall page lists the other rules that affect an app so you can see why something is allowed or blocked. If a profile has the firewall turned off, no rule applies there.
+- **Temporary blocks** ("for 1 hour", "until restart") end through a one-time scheduled task in `\WireForge\` that runs only `netsh.exe` and `schtasks.exe` from System32 (never WireForge.exe, which lives in a folder you can write to). If that task cannot run, the Firewall page shows the block as "Time is up" and offers to remove it.
+- **New-app alerts** watch the connection table every two seconds while WireForge runs. A program that connects and disconnects between two looks can be missed; an alert asks after the program already connected once.
+- **Lockdown** sets each profile's default for outgoing traffic to block and adds allow rules for the chosen programs. The previous defaults are stored in a disabled WireForge rule, so they can be restored exactly even if WireForge's settings folder is lost. Windows' own enabled outgoing rules (such as Core Networking for DNS and DHCP) still apply.
+- **Undo:** every change is written to `%LOCALAPPDATA%\WireForge\firewall-journal.jsonl` with all its steps. A failed step reverses the steps before it. The uninstaller offers to remove all WireForge rules (and end lockdown).
+- **Testing, honestly:** the planning, naming, journal/undo, temporary-block expiry, lockdown save/restore, new-app detection and command-line parsing are covered by unit tests against an in-memory firewall. Against the real Windows Defender Firewall, this release was checked **read-only** (firewall state and rules are read in a test, and the command line refuses changes without administrator rights). Adding and removing real rules, the elevation prompt, the scheduled tasks and lockdown were **not** exercised on a real PC before release.
 
 ## 🏗️ Build from source
 
@@ -190,8 +230,25 @@ cargo test --workspace
 | `WireForge.exe --selftest` | Run each collector once and print only success and counts |
 | `WireForge.exe --screenshot out.png` | Render the window to a PNG and exit |
 
+### Firewall from the command line
+
+Changes need an administrator terminal (the window asks for permission by itself). `<exe>` is a full path.
+
+| Command | What it does |
+|---|---|
+| `WireForge.exe --fw-list` | Firewall state per profile and the apps WireForge blocks (no rights needed) |
+| `WireForge.exe --fw-block <exe>` | Block a program's outgoing connections. Options: `--for 1h` (or `30m`, `2d`), `--until-restart`, `--inbound`, `--profiles all\|domain,private,public` |
+| `WireForge.exe --fw-unblock <exe>` | Remove WireForge's block of a program |
+| `WireForge.exe --fw-lockdown on [--allow <exe>]...` | Block all outgoing traffic except the allowed programs |
+| `WireForge.exe --fw-lockdown off` | End lockdown and restore the previous defaults |
+| `WireForge.exe --fw-allow <exe>` / `--fw-disallow <exe>` | Change the lockdown allow list |
+| `WireForge.exe --fw-undo <id>` | Undo a change from the journal |
+| `WireForge.exe --fw-expire` | Remove temporary blocks whose time is up |
+| `WireForge.exe --fw-remove-all` | Remove every WireForge rule and end lockdown |
+
 ```
 crates/
+  wf-firewall  app firewall on Windows Defender Firewall: rules, plans, journal, alerts
   wf-traffic   adapters, connections, per-app usage
   wf-wifi      Wi-Fi scan, saved profiles, device discovery, vendor table
   wf-tools     ping, traceroute, DNS, ports, whois, speed test

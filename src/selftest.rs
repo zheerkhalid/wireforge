@@ -26,6 +26,24 @@ fn own_checks() -> Vec<Check> {
     let _ = std::fs::remove_dir_all(&dir);
     out.push(("app: settings".into(), result));
 
+    // Windows Defender Firewall, read only: counts only, nothing is changed.
+    out.push((
+        "app: firewall (read only)".into(),
+        crate::firewall::read_view().map(|v| {
+            format!(
+                "{} profiles ({} on), {} rules, {} WireForge rules, lockdown {}",
+                v.status.profiles.len(),
+                v.status.profiles.iter().filter(|p| p.enabled).count(),
+                v.rules.len(),
+                v.rules
+                    .iter()
+                    .filter(|r| wf_firewall::naming::is_ours(r))
+                    .count(),
+                if v.lockdown.is_some() { "on" } else { "off" }
+            )
+        }),
+    ));
+
     // The interface report over the real adapters: shape only.
     out.push((
         "app: interface report".into(),

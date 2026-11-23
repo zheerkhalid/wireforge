@@ -8,8 +8,8 @@ use super::theme::{self, pal_ctx, regular, semibold, Icon};
 use super::widgets;
 use super::{
     apps_view::AppsPage, connections_view::ConnectionsPage, devices_view::DevicesPage,
-    overview::OverviewPage, saved_view::SavedPage, speed_view::SpeedPage, tools_view::ToolsPage,
-    wifi_view::WifiPage,
+    firewall_view::FirewallPage, overview::OverviewPage, saved_view::SavedPage,
+    speed_view::SpeedPage, tools_view::ToolsPage, wifi_view::WifiPage,
 };
 use crate::fmt::{self, Units};
 use crate::settings::{self, Settings};
@@ -50,6 +50,7 @@ pub enum Tab {
     Overview,
     Apps,
     Connections,
+    Firewall,
     Wifi,
     Saved,
     Devices,
@@ -135,6 +136,7 @@ pub struct App {
     pub(super) devices: DevicesPage,
     pub(super) tools: ToolsPage,
     pub(super) speed: SpeedPage,
+    pub(super) fw: FirewallPage,
 
     icons: HashMap<String, Option<TextureHandle>>,
     icon_tx: Option<Sender<(String, String)>>,
@@ -337,6 +339,7 @@ impl App {
             devices: DevicesPage::new(demo, &view, &data_dir),
             tools: ToolsPage::new(demo, &view),
             speed: SpeedPage::new(demo, &view, &data_dir),
+            fw: FirewallPage::new(demo, &view, &data_dir, now),
             icons: HashMap::new(),
             icon_tx,
             poll,
@@ -369,6 +372,7 @@ impl App {
         self.tab = match page {
             "apps" | "usage" => Tab::Apps,
             "connections" => Tab::Connections,
+            "firewall" => Tab::Firewall,
             "wifi" => Tab::Wifi,
             "saved" => Tab::Saved,
             "devices" => Tab::Devices,
@@ -403,6 +407,13 @@ impl App {
     /// A toast, plus a balloon from the tray icon when the window is hidden.
     pub(super) fn alert(&mut self, title: &str, text: &str) {
         self.toast(format!("{title}: {text}"), false);
+        if let Some(s) = &self.sys {
+            s.notify(title, text);
+        }
+    }
+
+    /// A balloon from the tray icon (no toast).
+    pub(super) fn notify(&mut self, title: &str, text: &str) {
         if let Some(s) = &self.sys {
             s.notify(title, text);
         }
@@ -549,7 +560,10 @@ impl App {
     fn refresh(&mut self, ctx: &egui::Context) {
         self.now = sys::now_unix();
         self.poll.want_connections.store(
-            u8::from(self.tab == Tab::Connections && !self.conns.paused),
+            u8::from(
+                (self.tab == Tab::Connections && !self.conns.paused)
+                    || (self.settings.fw_alerts && !self.demo),
+            ),
             Ordering::Relaxed,
         );
         let Some(monitor) = self.monitor.clone() else {
@@ -625,6 +639,7 @@ impl App {
                     self.connections = list;
                     self.connections_error = None;
                     self.connections_at = Some(Instant::now());
+                    self.fw_observe();
                 }
                 Msg::Connections(Err(e)) => self.connections_error = Some(e),
                 Msg::Link(link) => {
@@ -680,6 +695,8 @@ impl App {
         if escape {
             if self.confirm.is_some() {
                 self.confirm = None;
+            } else if self.fw.dialog.is_some() {
+                self.fw.dialog = None;
             } else if self.about_open {
                 self.about_open = false;
             }
@@ -828,6 +845,23 @@ impl App {
                             self.about_open = true;
                         }
                         ui.add_space(6.0);
+                        if self.fw.lockdown_on() {
+                            // Always visible while lockdown is on, on every page.
+                            if widgets::danger_button(ui, "End lockdown", self.fw.busy.is_none())
+                                .on_hover_text(
+                                    "Lockdown blocks every outgoing connection except allowed programs. Ending it restores the previous settings exactly.",
+                                )
+                                .clicked()
+                            {
+                                self.fw_request(
+                                    ctx,
+                                    wf_firewall::cli::FwCommand::LockdownOff,
+                                    "Ending lockdown".into(),
+                                );
+                            }
+                            widgets::badge(ui, &Icon::LOCK.with("Lockdown on"), p.danger);
+                            ui.add_space(6.0);
+                        }
                         if self.elevated {
                             widgets::badge(ui, &Icon::SHIELD.with("Administrator"), p.accent)
                                 .on_hover_text(
@@ -875,7 +909,7 @@ impl App {
                     Stroke::new(1.0_f32, p.border),
                 );
                 ui.spacing_mut().item_spacing.y = 4.0;
-                let items: [(Tab, Icon, &str, Option<usize>); 9] = [
+                let items: [(Tab, Icon, &str, Option<usize>); 10] = [
                     (Tab::Overview, Icon::HOME, "Overview", None),
                     (Tab::Apps, Icon::APPS, "Apps", Some(self.snap.apps.len())),
                     (
@@ -884,6 +918,7 @@ impl App {
                         "Connections",
                         (!self.connections.is_empty()).then_some(self.connections.len()),
                     ),
+                    (Tab::Firewall, Icon::SHIELD, "Firewall", self.fw.count()),
                     (Tab::Wifi, Icon::WIFI, "Wi-Fi", self.wifi.count()),
                     (Tab::Saved, Icon::KEY, "Saved networks", self.saved.count()),
                     (Tab::Devices, Icon::DEVICES, "Devices", self.devices.count()),
@@ -1157,6 +1192,7 @@ impl eframe::App for App {
         self.devices_poll(ctx);
         self.tools_poll(ctx);
         self.speed_poll(ctx);
+        self.firewall_poll(ctx);
 
         self.header(ctx);
         self.rail(ctx);
@@ -1172,6 +1208,7 @@ impl eframe::App for App {
                 Tab::Overview => self.overview_ui(ui),
                 Tab::Apps => self.apps_ui(ui),
                 Tab::Connections => self.connections_ui(ui),
+                Tab::Firewall => self.firewall_ui(ui),
                 Tab::Wifi => self.wifi_ui(ui),
                 Tab::Saved => self.saved_ui(ui),
                 Tab::Devices => self.devices_ui(ui),
@@ -1180,8 +1217,10 @@ impl eframe::App for App {
                 Tab::Settings => self.settings_ui(ui),
             });
 
+        self.fw_dialogs(ctx);
         self.confirm_dialog(ctx);
         self.about_dialog(ctx);
+        self.fw_alerts_ui(ctx);
         self.toasts_ui(ctx);
     }
 

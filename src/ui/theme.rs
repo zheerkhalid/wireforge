@@ -296,6 +296,9 @@ impl Icon {
     pub const PHONE: Icon = Icon("\u{E8EA}");
     pub const PRINTER: Icon = Icon("\u{E749}");
     pub const TV: Icon = Icon("\u{E7F4}");
+    pub const BLOCKED: Icon = Icon("\u{E72E}");
+    pub const ADD: Icon = Icon("\u{E710}");
+    pub const UNDO: Icon = Icon("\u{E7A7}");
 
     /// The glyph, or an empty string when the icon font is unavailable.
     pub fn glyph(self) -> &'static str {
